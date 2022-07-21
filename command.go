@@ -8,6 +8,7 @@ const (
     GROUPS
     MSG
     ABORT
+    HELP
 )
 
 type command struct {

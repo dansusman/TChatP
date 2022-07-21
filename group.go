@@ -16,3 +16,11 @@ func (g *group) broadcast(sender *client, msg string) {
     }
 }
 
+func (g *group) memberNames() []string {
+    var names []string
+    for _, cl := range g.members {
+        names = append(names, cl.name)
+    }
+    return names
+}
+

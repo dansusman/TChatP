@@ -10,12 +10,11 @@ change user names, join groups, etc.
 ## Future Plans
 
 ### Should
-- [ ] make a /help command that prints what commands are available
-- [ ] make server things stateless?
+- [x] make a /help command that prints what commands are available
 
 ### Probably Will
-- [ ] list members of a group when you join? ("you can talk to x, y, z")
-- [ ] use /msg by default when you're in a room (so clients don't have to type /msg every time)
+- [x] list members of a group when you join? ("you can talk to x, y, z")
+- [x] use /msg by default when you're in a room (so clients don't have to type /msg every time)
 - [ ] clients can join multiple groups
 - [ ] make a /leave command to leave a group
 - [ ] when clients can be in more than one group, make a /switch command to talk in another group

@@ -18,6 +18,10 @@ func (c *client) msg(msg string) {
     c.conn.Write([]byte("> " + msg + "\n"))
 }
 
+func (c *client) err(err error) {
+    c.conn.Write([]byte("err: " + err.Error() + "\n"))
+}
+
 func (c *client) readActions() {
     for {
         msg, err := bufio.NewReader(c.conn).ReadString('\n')
@@ -40,14 +44,27 @@ func (c *client) readActions() {
             c.passCommand(MSG, args)
         case "/abort":
             c.passCommand(ABORT, args)
+        case "/help":
+            c.printHelp()
         default:
-            c.err(fmt.Errorf("unknown command: %s", args[0]))
+            ok := c.msgIfInRoom(args)
+            if !ok {
+                c.err(fmt.Errorf("unknown command: %s", args[0]))
+            }
         }
     }
 }
 
-func (c *client) err(err error) {
-    c.conn.Write([]byte("err: " + err.Error() + "\n"))
+func (c *client) msgIfInRoom(args []string) bool {
+    if c.group != nil {
+        args = append([]string{"msg"}, args...)
+        c.passCommand(MSG, args)
+    }
+    return c.group != nil
+}
+
+func (c *client) printHelp() {
+    c.msg("Available commands: /name, /join, /groups, /msg, /abort, /help")
 }
 
 func (c *client) passCommand(cmd commandUUID, args []string) {

@@ -45,13 +45,9 @@ func (s *server) run() {
     }
 }
 
-// TODO: make these stateless? just return what needs to be returned
-// and dispatch the messages elsewhere. I really hate that allGroups is
-// essentially a list command, but returns nothing.......
-
 func (s *server) name(c *client, name string) {
     c.name = name
-    c.msg(fmt.Sprintf("nice name, %s\n", c.name))
+    c.msg(fmt.Sprintf("nice name, %s", c.name))
 }
 
 func (s *server) join(c *client, groupName string) {
@@ -65,6 +61,7 @@ func (s *server) join(c *client, groupName string) {
         s.groups[groupName] = g
     }
 
+    otherMembers := g.memberNames()
     g.members[c.conn.RemoteAddr()] = c
 
     g.broadcast(c, fmt.Sprintf("%s has joined the group!", c.name))
@@ -72,6 +69,10 @@ func (s *server) join(c *client, groupName string) {
     c.group = g
 
     c.msg(fmt.Sprintf("%s welcomes you, %s! enjoy your stay.", groupName, c.name))
+
+    if len(otherMembers) != 0 {
+        c.msg(fmt.Sprintf("other members of this group: %s", strings.Join(otherMembers, ", ")))
+    }
 }
 
 func (s *server) allGroups(c *client) {
