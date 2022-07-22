@@ -11,13 +11,15 @@ change user names, join groups, etc.
 
 ### Should
 - [x] make a /help command that prints what commands are available
+- [ ] there's a bug when a member leaves and client tries to run a command
+    - something to do with newline?
 
 ### Probably Will
 - [x] list members of a group when you join? ("you can talk to x, y, z")
 - [x] use /msg by default when you're in a room (so clients don't have to type /msg every time)
-- [ ] clients can join multiple groups
+- [x] clients can join multiple groups
+- [x] when clients can be in more than one group, make a /switch command to talk in another group
 - [ ] make a /leave command to leave a group
-- [ ] when clients can be in more than one group, make a /switch command to talk in another group
 
 ### Could
 - [ ] format text messages

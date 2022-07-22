@@ -23,7 +23,8 @@ func (s *server) newClient(conn net.Conn) *client {
     return &client {
         name: "anon",
         conn: conn,
-        group: nil,
+        groups: make(map[string]*group),
+        activeGroup: nil,
         actions: s.commands,
     }
 }
@@ -32,17 +33,32 @@ func (s *server) run() {
     for command := range s.commands {
         switch command.uuid {
         case NAME:
-            s.name(command.client, command.args[1])
+            if s.checkCommand(command) {
+                s.name(command.client, command.args[1])
+            }
         case JOIN:
-            s.join(command.client, command.args[1])
+            if s.checkCommand(command) {
+                s.join(command.client, command.args[1])
+            }
         case GROUPS:
             s.allGroups(command.client)
         case MSG:
             s.msg(command.client, command.args)
         case ABORT:
             s.abort(command.client)
+        case SWITCH:
+            if s.checkCommand(command) {
+                s.switchGroup(command.client, command.args[1])
+            }
         }
     }
+}
+
+func (s *server) checkCommand(c command) bool {
+    if len(c.args) < 2 {
+        c.client.msg(fmt.Sprintf("Improper %[1]s usage; use /%[1]s <%[1]s>.", c.args[0][1:]))
+    }
+    return len(c.args) >= 2
 }
 
 func (s *server) name(c *client, name string) {
@@ -66,7 +82,8 @@ func (s *server) join(c *client, groupName string) {
 
     g.broadcast(c, fmt.Sprintf("%s has joined the group!", c.name))
 
-    c.group = g
+    c.groups[g.title] = g
+    c.activeGroup = g
 
     c.msg(fmt.Sprintf("%s welcomes you, %s! enjoy your stay.", groupName, c.name))
 
@@ -91,7 +108,7 @@ func (s *server) msg(c *client, args []string) {
 	}
 
 	msg := strings.Join(args[1:], " ")
-	c.group.broadcast(c, c.name + ": " + msg)
+	c.activeGroup.broadcast(c, c.name + ": " + msg)
 }
 
 func (s *server) abort(c *client) {
@@ -102,10 +119,18 @@ func (s *server) abort(c *client) {
 }
 
 func (s *server) kickClient(c *client) {
-    if c.group != nil {
-		temp := s.groups[c.group.title]
-		delete(s.groups[c.group.title].members, c.conn.RemoteAddr())
+    if c.activeGroup != nil {
+		temp := s.groups[c.activeGroup.title]
+		delete(s.groups[c.activeGroup.title].members, c.conn.RemoteAddr())
 		temp.broadcast(c, fmt.Sprintf("%s has left the room", c.name))
 	}
+}
+
+func (s *server) switchGroup(c *client, groupName string) {
+    if val, ok := c.groups[groupName]; ok {
+        // client is in the group => able to set activeGroup to group
+        c.activeGroup = val
+    }
+    c.msg(fmt.Sprintf("You have switched to the group: %s", groupName))
 }
 

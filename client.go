@@ -10,7 +10,8 @@ import (
 type client struct {
     conn net.Conn
     name string
-    group *group // for now, let's just have one chat group per user
+    groups map[string]*group
+    activeGroup *group
     actions chan<- command
 }
 
@@ -46,6 +47,8 @@ func (c *client) readActions() {
             c.passCommand(ABORT, args)
         case "/help":
             c.printHelp()
+        case "/switch":
+            c.passCommand(SWITCH, args)
         default:
             ok := c.msgIfInRoom(args)
             if !ok {
@@ -56,15 +59,15 @@ func (c *client) readActions() {
 }
 
 func (c *client) msgIfInRoom(args []string) bool {
-    if c.group != nil {
+    if c.activeGroup != nil {
         args = append([]string{"msg"}, args...)
         c.passCommand(MSG, args)
     }
-    return c.group != nil
+    return c.activeGroup != nil
 }
 
 func (c *client) printHelp() {
-    c.msg("Available commands: /name, /join, /groups, /msg, /abort, /help")
+    c.msg("Available commands: /name, /join, /groups, /msg, /abort, /help, /switch")
 }
 
 func (c *client) passCommand(cmd commandUUID, args []string) {

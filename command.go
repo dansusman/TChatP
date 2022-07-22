@@ -9,6 +9,7 @@ const (
     MSG
     ABORT
     HELP
+    SWITCH
 )
 
 type command struct {
