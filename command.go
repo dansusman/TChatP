@@ -10,6 +10,7 @@ const (
     ABORT
     HELP
     SWITCH
+    LEAVE
 )
 
 type command struct {

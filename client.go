@@ -10,7 +10,7 @@ import (
 type client struct {
     conn net.Conn
     name string
-    groups map[string]*group
+    groups map[string]*group // groupName to group
     activeGroup *group
     actions chan<- command
 }
@@ -47,6 +47,8 @@ func (c *client) readActions() {
             c.passCommand(ABORT, args)
         case "/help":
             c.printHelp()
+        case "/leave":
+            c.passCommand(LEAVE, args)
         case "/switch":
             c.passCommand(SWITCH, args)
         default:

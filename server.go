@@ -50,6 +50,8 @@ func (s *server) run() {
             if s.checkCommand(command) {
                 s.switchGroup(command.client, command.args[1])
             }
+        case LEAVE:
+            s.leaveGroup(command.client, command.args)
         }
     }
 }
@@ -130,7 +132,30 @@ func (s *server) switchGroup(c *client, groupName string) {
     if val, ok := c.groups[groupName]; ok {
         // client is in the group => able to set activeGroup to group
         c.activeGroup = val
+        c.msg(fmt.Sprintf("You have switched to the group: %s", groupName))
+    } else {
+        c.msg(fmt.Sprintf("You are not in the group: %s. Try the /join command.", groupName))
     }
-    c.msg(fmt.Sprintf("You have switched to the group: %s", groupName))
+}
+
+func (s *server) leaveGroup(c *client, args []string) {
+    var groupName string
+    if len(c.groups) == 0 {
+        c.msg("You are not a member of any groups.")
+        return
+    }
+    if len(args) < 2 {
+        // leave current group
+        groupName = c.activeGroup.title
+        s.kickClient(c)
+        c.activeGroup = nil
+        delete(c.groups, groupName)
+    } else {
+        // leave the group specified by args[1]
+        groupName = args[1]
+        s.kickClient(c)
+        delete(c.groups, groupName)
+    }
+    c.msg(fmt.Sprintf("You have left the group: %s", groupName))
 }
 
